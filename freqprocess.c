@@ -4,25 +4,25 @@
 #include "freqprocess.h"
 #define UINT8_MAX_VALUE (255)
 
-bwimage_t *correlateLocateShape(bwimage_t *target, bwimage_t *pattern, float variance, int *npeak, Pixel *maximizer) {
+bwimage_t *correlateLocateShape(bwimage_t *target, bwimage_t *pattern, float variance, float tolerancethreshold, int *npeak, Pixel *maximizer) {
 	cimage_t *cTarget = bwimageToCimage(target);
 	cimage_t *cPattern = bwimageToCimage(pattern);
 	cimage_t *cResult = complexCorrelate(cTarget, cPattern, variance);
-	bwimage_t *result = cimageToBwimageMemorizePeaks(cResult, npeak, maximizer);
+	bwimage_t *result = cimageToBwimageMemorizePeaks(cResult, tolerancethreshold, npeak, maximizer);
 	freeCimage(cTarget);
 	freeCimage(cPattern);
 	freeCimage(cResult);
 	return result;
 }
 
-void trimLocateShape(bwimage_t **corfil, bwimage_t *target, bwimage_t **pattern, float variance, int *npeak, Pixel *maximizer) {
+void trimLocateShape(bwimage_t **corfil, bwimage_t *target, bwimage_t **pattern, float variance, float tolerancethreshold, int *npeak, Pixel *maximizer) {
 	cimage_t *cTarget = bwimageToCimage(target);
 	cimage_t *cPattern = bwimageToCimage(*pattern);
 	cimage_t *cResult;
 	complexTrimCor(&cResult, cTarget, &cPattern, variance);
 	*pattern = cimageToBwimage(cPattern);
-	*corfil = cimageToBwimageMemorizePeaks(cResult, npeak, maximizer);
-	freeCimage(cTarget);
+	*corfil = cimageToBwimageMemorizePeaks(cResult, tolerancethreshold, npeak, maximizer);
+    freeCimage(cTarget);
 	freeCimage(cPattern);
 	freeCimage(cResult);
 }

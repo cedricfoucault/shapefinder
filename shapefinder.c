@@ -21,12 +21,13 @@ char *fgetstr(char *string, int n, FILE *stream)
 
 int main()
 {
-	FILE *settings = NULL;
+	FILE *currentFile = NULL;
 	char *target_path = (char*) malloc(sizeof(char) * MAX_PATH);
 	char *pattern_path = (char*) malloc(sizeof(char) * MAX_PATH);
 	char *shapes_path = (char*) malloc(sizeof(char) * MAX_PATH);
 	char *peaks_path = (char*) malloc(sizeof(char) * MAX_PATH);
 	char *corfil_path = (char*) malloc(sizeof(char) * MAX_PATH);
+	float tolerancethreshold = (float)0.;
 	bwimage_t *image_target, *image_pattern, *image_corfil, *image_peaks, *image_shapes;
 	int npeak, i, j, k;
 	Pixel *peaks;
@@ -38,18 +39,31 @@ int main()
 	
 	do
 	{
-		settings = fopen("settings.txt", "r");
-		if (settings!=NULL) {
-			fgetstr(target_path, MAX_PATH, settings);
-			fgetstr(pattern_path, MAX_PATH, settings);
-			fgetstr(shapes_path, MAX_PATH, settings);
-			fgetstr(peaks_path, MAX_PATH, settings);
-			fgetstr(corfil_path, MAX_PATH, settings);
+		// file containing the paths to the images
+		currentFile = fopen("paths.txt", "r"); 
+		if (currentFile!=NULL) {
+			fgetstr(target_path, MAX_PATH, currentFile);
+			fgetstr(pattern_path, MAX_PATH, currentFile);
+			fgetstr(shapes_path, MAX_PATH, currentFile);
+			fgetstr(peaks_path, MAX_PATH, currentFile);
+			fgetstr(corfil_path, MAX_PATH, currentFile);
 		} else {
 			printf("settings.txt cannot be opened");
 			getchar();
 			exit(EXIT_FAILURE);
 		}
+		fclose(currentFile);
+		// file containing the tolerance threshold
+		currentFile = fopen("tolerancethreshold.txt", "r");
+		if (currentFile != NULL) {
+		if (fscanf(currentFile, "%f", &tolerancethreshold) == EOF
+			|| tolerancethreshold == (float)0.) {
+			tolerancethreshold = (float)0.7; // default value if no threshold is specified
+		}
+		} else {
+			tolerancethreshold = (float)0.7;
+		}
+
 		retval = EEALoadImage(target_path, image_target);
 		if(retval != EEA_OK) break;
 		retval = EEALoadImage(pattern_path, image_pattern);
@@ -62,7 +76,7 @@ int main()
 			peaks = (Pixel *) malloc(image_target->width * sizeof(Pixel *));
 		}
 
-		trimLocateShape(&image_corfil, image_target, &image_pattern, 0.08, &npeak, peaks);
+		trimLocateShape(&image_corfil, image_target, &image_pattern, 0.08, tolerancethreshold, &npeak, peaks);
 		image_peaks = createPeakImage(image_corfil->height, image_corfil->width, npeak, peaks);
 		image_shapes = createBlackBwimage(image_target->height, image_target->width);
 		for (k=0; k < npeak; k++) {
@@ -112,7 +126,9 @@ int main()
 	default:
 		;/* Can't happen */
 	}
-	free(shapes_path); free(peaks_path); free(corfil_path);
+	free(shapes_path);
+	free(peaks_path);
+	free(corfil_path);
 	free(peaks);
 	EEAFreeImage(image_target);
 	EEAFreeImage(image_pattern);

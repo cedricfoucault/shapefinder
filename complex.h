@@ -21,7 +21,7 @@ typedef struct {
 	int y;
 } Pixel;
 
-bwimage_t *cimageToBwimageMemorizePeaks(cimage_t *complexImage, int *npeak, Pixel *maximizer);
+bwimage_t *cimageToBwimageMemorizePeaks(cimage_t *complexImage, float tolerancethreshold, int *npeak, Pixel *maximizer);
 cimage_t *bwimageToCimage(bwimage_t *image);
 bwimage_t *cimageToBwimage(cimage_t *complexImage);
 
@@ -46,7 +46,7 @@ void maxMinTab2Float(float **tab2Float, int height, int width, float *max, float
 void maxMinTab1Complex(Complex *tab1Complex, int size, float *max, float *min);
 void maxMinTab2Complex(Complex **tab2Complex, int height, int width, float *max, float *min);
 
-void locatePeaks(Complex **tab2Complex, int height, int width, float max, int *npeak, Pixel *maximizer);
+void locatePeaks(Complex **tab2Complex, int height, int width, float max, float tolerancethreshold, int *npeak, Pixel *maximizer);
 
 void freeCimage(cimage_t *complexImage);
 void freeBwimage(bwimage_t *image);

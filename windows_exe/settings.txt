@@ -1,5 +1,0 @@
-samples/shapes.tif
-samples/pattern_circle.tif
-samples/circle_in_shapes.tif
-samples/peaks_circle_in_shapes.tif
-samples/corfil_circle_in_shapes.tif

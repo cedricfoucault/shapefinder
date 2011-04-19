@@ -85,7 +85,7 @@ bwimage_t *cimageToBwimage(cimage_t *complexImage) {
 	return image;
 }
 
-bwimage_t *cimageToBwimageMemorizePeaks(cimage_t *complexImage, int *npeak, Pixel *maximizer) {
+bwimage_t *cimageToBwimageMemorizePeaks(cimage_t *complexImage, float tolerancethreshold, int *npeak, Pixel *maximizer) {
 	bwimage_t *image;
 	int height = complexImage->height, width = complexImage->width, i, j;
 	float max, min;
@@ -96,7 +96,7 @@ bwimage_t *cimageToBwimageMemorizePeaks(cimage_t *complexImage, int *npeak, Pixe
 	image->rawdata = (uint8 *) malloc(height * width * sizeof(uint8));
 	image->data = (uint8 **) malloc(height * sizeof(uint8*));
 	maxMinTab1Complex(complexImage->rawdata, height * width, &max, &min);
-	locatePeaks(complexImage->data, height, width, max, npeak, maximizer);
+	locatePeaks(complexImage->data, height, width, max, tolerancethreshold, npeak, maximizer);
 	for (i = 0; i < height; i++) {
 		image->data[i] = (uint8 *) malloc(width * sizeof(uint8));
 		for (j = 0; j < width; j++) {
@@ -280,14 +280,14 @@ void maxMinTab2Complex(Complex **tab2Complex, int height, int width, float *max,
 	}
 }
 
-void locatePeaks(Complex **tab2Complex, int height, int width, float max, int *npeak, Pixel *maximizer) {
+void locatePeaks(Complex **tab2Complex, int height, int width, float max, float tolerancethreshold, int *npeak, Pixel *maximizer) {
 	int i, j;
 //	Pixel *moreMaximizer;
 
 	*npeak = 0;
 	for (i=0; i < height; i++) {
 		for (j=0; j < width; j++) {
-			if (tab2Complex[i][j].re > 0.5*max) {
+			if (tab2Complex[i][j].re > 0.7*max) {
 				(*npeak)++;
 				//moreMaximizer = (Pixel *) realloc(maximizer, (*npeak) * sizeof(Pixel));
 				//if (moreMaximizer !=NULL) {
