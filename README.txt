@@ -5,6 +5,7 @@ Locates a given shape in a target image. Renders the shape where it has been det
 
 This is a work in progress.
 
+
 What it does
 ------------
 
@@ -49,6 +50,7 @@ For the moment, the program will work only if the target and pattern image meet 
 * The images must be stored in the TIFF File Format, with no compression, in grayscale, with 8-bit color depth.
 * The width and height of the images must be a power of 2.
 * The target and pattern images must have the exact same size.
+
 
 Todo
 ----
