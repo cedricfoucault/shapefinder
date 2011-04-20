@@ -69,9 +69,9 @@ should work perfectly.
 Todo
 ----
 
-* Extends the detection so that it works even if the shapes in the target image are bigger or smaller
+* Extend the detection so that it works even if the shapes in the target image are bigger or smaller
 than in the pattern image.
-* Extends the detection so that it works even if the shapes in the target image is rotated.
+* Extend the detection so that it works even if the shapes in the target image is rotated.
 * Automate the process for large amounts of target images, in order to apply it to videos (many time frames).
 * Make it compatible with recent c compilers.
 * Make it compatible with UNIX.

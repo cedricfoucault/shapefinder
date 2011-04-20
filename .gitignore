@@ -1,1 +1,11 @@
-test2.ncb
+#Os junk files
+
+Thumbs.db
+ehthumbs.db
+.DS_Store?
+Icon?
+
+# HTML files
+
+*.plg
+

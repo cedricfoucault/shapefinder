@@ -1,5 +1,5 @@
 samples/shapes.tif
-samples/pattern_triangle.tif
-samples/triangle_in_shapes2.tif
-samples/peaks_triange_in_shapes.tif
-samples/corfil_triangle_in_shapes.tif
+samples/pattern_circle.tif
+samples/circle_in_shapes.tif
+samples/peaks_circle_in_shapes.tif
+samples/corfil_circle_in_shapes.tif
