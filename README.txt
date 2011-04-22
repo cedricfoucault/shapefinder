@@ -57,6 +57,7 @@ For the moment, the program will work only if the target and pattern image meet 
 An optional parameter can be specified in "tolerancethreshold.txt".
 It contains a float between 0 and 1 that represents the tolerance threshold of the detection.
 At one point, the program must do a yes/no detection of the shape at a given location.
+The higher the tolerance threshold, the more selective the detection is.
 A lower tolerance threshold reduce the risk of missing the shape at one location,
 but increase the chances for false-positives, and vice-versa.
 
