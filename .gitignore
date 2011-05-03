@@ -1,5 +1,7 @@
 # Temp compiled source #
 *.o
+*.d
+build
 
 # Os generated files #
 
