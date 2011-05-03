@@ -1,7 +1,8 @@
-/** Filtre dans le domaine spectral avec détection de contour et moyenne gaussienne (par convolution avec une gaussienne)
-- tab l'image spectrale par FFT d'un signal à 2 dimensions, stockée dans un tableau à unidimensionel
+/** Filtre dans le domaine spectral avec dï¿½tection de contour et moyenne gaussienne (par convolution avec une gaussienne)
+- tab l'image spectrale par FFT d'un signal ï¿½ 2 dimensions, stockï¿½e dans un tableau ï¿½ unidimensionel
 */ 
 #include "freqprocess.h"
+#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 #define UINT8_MAX_VALUE (255)
 
 bwimage_t *correlateLocateShape(bwimage_t *target, bwimage_t *pattern, float variance, float tolerancethreshold, int *npeak, Pixel *maximizer) {
@@ -50,7 +51,7 @@ void complexTrim(cimage_t **image, float variance) {
 	Complex factor = {0., 0.};
 	float variance_dim = variance * (float)height * (float)width;
 	
-	fourn((float*)(*image)->rawdata, nn, 2, -1);
+	fourn((float*)(*image)->rawdata, (unsigned long*)nn, 2, -1);
 	for (i=0; i < height/2; i++) {
 		for (j=0; j < width/2; j++) {
 			factor.re = (float)sqrt(i*i + j*j) * (float)exp(- (float)(i*i + j*j) / (2*variance_dim));
@@ -72,7 +73,7 @@ void complexTrim(cimage_t **image, float variance) {
 		}
 	}
 
-	fourn((float*)((*image)->rawdata), nn, 2, 1);
+	fourn((float*)((*image)->rawdata), (unsigned long*)nn, 2, 1);
 	for (i=0; i < height; i++) {
 		for (j=0; j < width; j++) {
 			(*image)->data[i][j].re = (*image)->rawdata[i * width + j].re = fabs((*image)->rawdata[i * width + j].re);
@@ -85,12 +86,12 @@ void complexTrimCor(cimage_t **corfil, cimage_t *target, cimage_t **pattern, flo
 	int height=target->height, width=target->width, i, j;
 	//int height=(*pattern)->height, width=(*pattern)->width, i, j;
 	int nn[2] = {height, width};
-	float variance_dim = (float)height * (float)width * variance; // variance dimensionnée en fonction de la taille de l'image
+	float variance_dim = (float)height * (float)width * variance; // variance dimensionnï¿½e en fonction de la taille de l'image
 	Complex factor = {0.,0.};
 	*corfil = createCimage(height, width);
 	
-	fourn((float*)(target->rawdata), nn, 2, -1);
-	fourn((float*)((*pattern)->rawdata), nn, 2, -1);
+	fourn((float*)(target->rawdata), (unsigned long*)nn, 2, -1);
+	fourn((float*)((*pattern)->rawdata), (unsigned long*)nn, 2, -1);
 	for (i=0; i < height/2; i++) {
 		for (j=0; j < width/2; j++) {
 			(*corfil)->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate((*pattern)->rawdata[i * width + j]));
@@ -129,8 +130,8 @@ void complexTrimCor(cimage_t **corfil, cimage_t *target, cimage_t **pattern, flo
 		}
 	}
 	
-	fourn((float*)((*corfil)->rawdata), nn, 2, 1);
-	fourn((float*)((*pattern)->rawdata), nn, 2, 1);
+	fourn((float*)((*corfil)->rawdata), (unsigned long*)nn, 2, 1);
+	fourn((float*)((*pattern)->rawdata), (unsigned long*)nn, 2, 1);
 	for (i=0; i < height; i++) {
 		for (j=0; j < width; j++) {
 			(*pattern)->data[i][j].re = (*pattern)->rawdata[i * width + j].re = fabs((*pattern)->rawdata[i * width + j].re);
@@ -143,12 +144,12 @@ void complexTrimCor(cimage_t **corfil, cimage_t *target, cimage_t **pattern, flo
 cimage_t *complexCorrelate(cimage_t *target, cimage_t *pattern, float variance) {
 	int height=target->height, width=target->width, i, j;
 	int nn[2] = {height, width};
-	float variance_dim = (float)height * (float)width * variance; // variance dimensionnée en fonction de la taille de l'image
+	float variance_dim = (float)height * (float)width * variance; // variance dimensionnï¿½e en fonction de la taille de l'image
 	Complex factor = {0.,0.};
 	cimage_t *result = createCimage(height, width);
 	
-	fourn((float*)(target->rawdata), nn, 2, -1);
-	fourn((float*)(pattern->rawdata), nn, 2, -1);
+	fourn((float*)(target->rawdata), (unsigned long*)nn, 2, -1);
+	fourn((float*)(pattern->rawdata), (unsigned long*)nn, 2, -1);
 	for (i=0; i < height/2; i++) {
 		for (j=0; j < width/2; j++) {
 			result->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate(pattern->rawdata[i * width + j]));
@@ -175,7 +176,7 @@ cimage_t *complexCorrelate(cimage_t *target, cimage_t *pattern, float variance) 
 		}
 	}
 	
-	fourn((float*)(result->rawdata), nn, 2, 1);
+	fourn((float*)(result->rawdata), (unsigned long*)nn, 2, 1);
 	for (i=0; i < height; i++) {
 		for (j=0; j < width; j++) {
 			result->data[i][j] = result->rawdata[i * width + j];
@@ -186,7 +187,7 @@ cimage_t *complexCorrelate(cimage_t *target, cimage_t *pattern, float variance) 
 
 void filter(Complex tab[], int height, int width, float variance) {
 	int i, j;
-	float variance_dim = (float)height * (float)width * variance; // variance dimensionnée en fonction de la taille de l'image
+	float variance_dim = (float)height * (float)width * variance; // variance dimensionnï¿½e en fonction de la taille de l'image
 	Complex factor = {0.,0.};
 	
 	for (i=0; i < height/2; i++) {
@@ -211,6 +212,78 @@ void filter(Complex tab[], int height, int width, float variance) {
 		}
 	}
 }
+
+void fourn(float data[], unsigned long nn[], int ndim, int isign)
+{
+
+	int idim;
+	unsigned long i1,i2,i3,i2rev,i3rev,ip1,ip2,ip3,ifp1,ifp2;
+	unsigned long ibit,k1,k2,n,nprev,nrem,ntot;
+	float tempi,tempr;
+	double theta,wi,wpi,wpr,wr,wtemp;
+
+	data--;
+	nn--;
+
+	for (ntot=1,idim=1;idim<=ndim;idim++)
+		ntot *= nn[idim];
+	nprev=1;
+	for (idim=ndim;idim>=1;idim--) {
+		n=nn[idim];
+		nrem=ntot/(n*nprev);
+		ip1=nprev << 1;
+		ip2=ip1*n;
+		ip3=ip2*nrem;
+		i2rev=1;
+		for (i2=1;i2<=ip2;i2+=ip1) {
+			if (i2 < i2rev) {
+				for (i1=i2;i1<=i2+ip1-2;i1+=2) {
+					for (i3=i1;i3<=ip3;i3+=ip2) {
+						i3rev=i2rev+i3-i2;
+						SWAP(data[i3],data[i3rev]);
+						SWAP(data[i3+1],data[i3rev+1]);
+					}
+				}
+			}
+			ibit=ip2 >> 1;
+			while (ibit >= ip1 && i2rev > ibit) {
+				i2rev -= ibit;
+				ibit >>= 1;
+			}
+			i2rev += ibit;
+		}
+		ifp1=ip1;
+		while (ifp1 < ip2) {
+			ifp2=ifp1 << 1;
+			theta=isign*6.28318530717959/(ifp2/ip1);
+			wtemp=sin(0.5*theta);
+			wpr = -2.0*wtemp*wtemp;
+			wpi=sin(theta);
+			wr=1.0;
+			wi=0.0;
+			for (i3=1;i3<=ifp1;i3+=ip1) {
+				for (i1=i3;i1<=i3+ip1-2;i1+=2) {
+					for (i2=i1;i2<=ip3;i2+=ifp2) {
+						k1=i2;
+						k2=k1+ifp1;
+						tempr=(float)wr*data[k2]-(float)wi*data[k2+1];
+						tempi=(float)wr*data[k2+1]+(float)wi*data[k2];
+						data[k2]=data[k1]-tempr;
+						data[k2+1]=data[k1+1]-tempi;
+						data[k1] += tempr;
+						data[k1+1] += tempi;
+					}
+				}
+				wr=(wtemp=wr)*wpr-wi*wpi+wr;
+				wi=wi*wpr+wtemp*wpi+wi;
+			}
+			ifp1=ifp2;
+		}
+		nprev *= n;
+	}
+}
+
+#undef SWAP
 
 // High-pass filter:
 
@@ -249,3 +322,4 @@ void filter(Complex tab[], int height, int width, float variance) {
 		if(EEA_OK != (retval=EEADumpImage("samples/filter_highpass.tif", real_image))) break;
 
 */
+

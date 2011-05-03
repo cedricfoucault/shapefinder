@@ -23,16 +23,14 @@ if there is a peak at [145][86], it means that you need to move the target image
 to the bottom in order to find the correct location of the shape.
 
 
-What you need
--------------
+Compilation & Execution
+-----------------------
 
-* To run the (compiled) program, you will need a way to run a windows .exe file.
-The executable is located at windows_exe/shapefinder.exe
+* Under Windows you can directly run the pre-compiled executable shapefinder.exe located at
+repo/folder/dist/Release/MinGW-Windows/
 
-* To compile the project, you will need a compiler that can link the libtiff library
-located at libraries\libtiff.lib. Since the binaries are old, I didn't manage to do it with
-recent compilers (gcc, Visual Studio 2000+...). So far I have been using MS Visual C++ 6.0's compiler.
-I am currently trying hard to free myself of this burden.
+* To compile the project, just run the Makefile ($ make install). If it doesn't work, try to build it in your favorite IDE
+under a new project. Don't forget to link it with the libtiff library in repo/folder/lib/.
 
 
 How to use it
@@ -74,8 +72,7 @@ Todo
 than in the pattern image.
 * Extend the detection so that it works even if the shapes in the target image is rotated.
 * Automate the process for large amounts of target images, in order to apply it to videos (many time frames).
-* Make it compatible with recent c compilers.
-* Make it compatible with UNIX.
+-- * Make it compatible with recent c compilers. -- DONE \o/ !!!!
 
 
 Contact

@@ -1,11 +1,9 @@
-#Os junk files
+# Temp compiled source #
+*.o
+
+# Os generated files #
 
 Thumbs.db
 ehthumbs.db
 .DS_Store?
 Icon?
-
-# HTML files
-
-*.plg
-

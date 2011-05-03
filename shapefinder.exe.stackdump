@@ -1,0 +1,9 @@
+Exception: STATUS_ACCESS_VIOLATION at eip=610F4870
+eax=2D465455 ebx=020F0000 ecx=61169FA0 edx=00000001 esi=61245EB9 edi=2D46544D
+ebp=0028CD38 esp=0028CC60 program=H:\Programming\C_C++\Netbeans\shapefinder\dist\Debug\Cygwin-Windows\shapefinder.exe, pid 4152, thread main
+cs=0023 ds=002B es=002B fs=0053 gs=002B ss=002B
+Stack trace:
+Frame     Function  Args
+0028CD38  610F4870  (00000001, 61245BCC, 021000F8, 61004BD9)
+0028CD68  61007048  (00000000, 0028CDA4, 61006990, 7EFDE000)
+End of stack trace

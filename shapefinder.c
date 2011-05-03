@@ -4,6 +4,8 @@
 #include "tifwrap.h"
 #include "freqprocess.h"
 
+#define MAX_PATH 256
+
 // fgetstr() - mimics behavior of fgets(), but removes new-line
 // character at end of line if it exists
 char *fgetstr(char *string, int n, FILE *stream)
@@ -48,7 +50,7 @@ int main()
 			fgetstr(peaks_path, MAX_PATH, currentFile);
 			fgetstr(corfil_path, MAX_PATH, currentFile);
 		} else {
-			printf("settings.txt cannot be opened");
+			printf("paths.txt cannot be opened");
 			getchar();
 			exit(EXIT_FAILURE);
 		}
