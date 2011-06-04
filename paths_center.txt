@@ -1,0 +1,3 @@
+samples/shapes.tif
+samples/pattern_triangle.tif
+samples/shapes_triangle_center.tif

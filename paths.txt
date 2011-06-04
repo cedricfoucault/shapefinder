@@ -1,5 +1,5 @@
 samples/shapes.tif
 samples/pattern_circle.tif
-samples/bibi.tif
+samples/doudou.tif
 samples/peaks_circle_in_shapes.tif
 samples/corfil_circle_in_shapes.tif

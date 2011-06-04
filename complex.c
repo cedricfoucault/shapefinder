@@ -1,6 +1,4 @@
-#include <stdlib.h>
 #include "complex.h"
-#include <stdio.h>
 
 #define UINT8_MAX_VALUE (255)
 
@@ -287,7 +285,7 @@ void locatePeaks(Complex **tab2Complex, int height, int width, float max, float 
 	*npeak = 0;
 	for (i=0; i < height; i++) {
 		for (j=0; j < width; j++) {
-			if (tab2Complex[i][j].re > 0.7*max) {
+			if (tab2Complex[i][j].re >= tolerancethreshold*max) {
 				(*npeak)++;
 				//moreMaximizer = (Pixel *) realloc(maximizer, (*npeak) * sizeof(Pixel));
 				//if (moreMaximizer !=NULL) {

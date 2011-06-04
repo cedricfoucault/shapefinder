@@ -14,29 +14,34 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc.exe
-CCC=g++.exe
-CXX=g++.exe
-FC=
-AS=as.exe
+CC=gcc
+CCC=g++
+CXX=g++
+FC=gfortran
+AS=as
 
 # Macros
-CND_PLATFORM=MinGW-Windows
+CND_PLATFORM=GNU-Linux-x86
 CND_CONF=Debug
 CND_DISTDIR=dist
+CND_BUILDDIR=build
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
+OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/freqprocess.o \
 	${OBJECTDIR}/tifwrap.o \
+	${OBJECTDIR}/fileread.o \
 	${OBJECTDIR}/shapefinder.o \
-	${OBJECTDIR}/complex.o
+	${OBJECTDIR}/centerfinder.o \
+	${OBJECTDIR}/complex.o \
+	${OBJECTDIR}/cvwrap.o \
+	${OBJECTDIR}/main.o
 
 
 # C Compiler Flags
@@ -53,43 +58,63 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-L../../../libraries_C/GnuWin32/lib -ltiff
+LDLIBSOPTIONS=-L../../../libraries_C/GnuWin32/lib -ltiff `pkg-config --libs opencv`  
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Debug.mk dist/Debug/MinGW-Windows/shapefinder.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder
 
-dist/Debug/MinGW-Windows/shapefinder.exe: ${OBJECTFILES}
-	${MKDIR} -p dist/Debug/MinGW-Windows
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder: ${OBJECTFILES}
+	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/freqprocess.o: freqprocess.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/freqprocess.o freqprocess.c
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/freqprocess.o freqprocess.c
 
 ${OBJECTDIR}/tifwrap.o: tifwrap.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/tifwrap.o tifwrap.c
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/tifwrap.o tifwrap.c
+
+${OBJECTDIR}/fileread.o: fileread.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/fileread.o fileread.c
 
 ${OBJECTDIR}/shapefinder.o: shapefinder.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/shapefinder.o shapefinder.c
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/shapefinder.o shapefinder.c
+
+${OBJECTDIR}/centerfinder.o: centerfinder.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/centerfinder.o centerfinder.c
 
 ${OBJECTDIR}/complex.o: complex.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/complex.o complex.c
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/complex.o complex.c
+
+${OBJECTDIR}/cvwrap.o: cvwrap.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/cvwrap.o cvwrap.c
+
+${OBJECTDIR}/main.o: main.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.c
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
-	${RM} -r build/Debug
-	${RM} dist/Debug/MinGW-Windows/shapefinder.exe
+	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder
 
 # Subprojects
 .clean-subprojects:

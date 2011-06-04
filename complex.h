@@ -1,29 +1,33 @@
-#ifndef COMPLEX
-#define COMPLEX
+#ifndef COMPLEX_H
+#define COMPLEX_H
+
+#include <stdlib.h>
+#include <stdio.h>
 #include "tiffio.h"
 #include "tifwrap.h"
 
 //typedef struct Complex Complex;
-typedef struct  {
-	float re; /* partie reelle */
-	float im; /* partie imaginaire */
+
+typedef struct {
+    float re; /* partie reelle */
+    float im; /* partie imaginaire */
 } Complex;
 
 typedef struct {
-	uint32 width;
-	uint32 height;
-	Complex **data;
-	Complex *rawdata;
+    uint32 width;
+    uint32 height;
+    Complex **data;
+    Complex *rawdata;
 } cimage_t;
 
 typedef struct {
-	int x;
-	int y;
+    int x;
+    int y;
 } Pixel;
 
-bwimage_t *cimageToBwimageMemorizePeaks(cimage_t *complexImage, float tolerancethreshold, int *npeak, Pixel *maximizer);
 cimage_t *bwimageToCimage(bwimage_t *image);
 bwimage_t *cimageToBwimage(cimage_t *complexImage);
+bwimage_t *cimageToBwimageMemorizePeaks(cimage_t *complexImage, float tolerancethreshold, int *npeak, Pixel *maximizer);
 
 cimage_t *createCimage(int height, int width);
 bwimage_t *createBlackBwimage(int height, int width);

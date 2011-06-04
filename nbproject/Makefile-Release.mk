@@ -14,29 +14,34 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc.exe
-CCC=g++.exe
-CXX=g++.exe
-FC=
-AS=as.exe
+CC=gcc
+CCC=g++
+CXX=g++
+FC=gfortran
+AS=as
 
 # Macros
-CND_PLATFORM=MinGW-Windows
+CND_PLATFORM=GNU-Linux-x86
 CND_CONF=Release
 CND_DISTDIR=dist
+CND_BUILDDIR=build
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
+OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/freqprocess.o \
 	${OBJECTDIR}/tifwrap.o \
+	${OBJECTDIR}/fileread.o \
 	${OBJECTDIR}/shapefinder.o \
-	${OBJECTDIR}/complex.o
+	${OBJECTDIR}/centerfinder.o \
+	${OBJECTDIR}/complex.o \
+	${OBJECTDIR}/cvwrap.o \
+	${OBJECTDIR}/main.o
 
 
 # C Compiler Flags
@@ -53,14 +58,14 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-L/H/Programming/C_C++/Netbeans/shapefinder/lib -ltiff
+LDLIBSOPTIONS=-Llib -ltiff
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Release.mk dist/Release/MinGW-Windows/shapefinder.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder
 
-dist/Release/MinGW-Windows/shapefinder.exe: ${OBJECTFILES}
-	${MKDIR} -p dist/Release/MinGW-Windows
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder: ${OBJECTFILES}
+	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/freqprocess.o: freqprocess.c 
@@ -73,23 +78,43 @@ ${OBJECTDIR}/tifwrap.o: tifwrap.c
 	${RM} $@.d
 	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/tifwrap.o tifwrap.c
 
+${OBJECTDIR}/fileread.o: fileread.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/fileread.o fileread.c
+
 ${OBJECTDIR}/shapefinder.o: shapefinder.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/shapefinder.o shapefinder.c
+
+${OBJECTDIR}/centerfinder.o: centerfinder.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/centerfinder.o centerfinder.c
 
 ${OBJECTDIR}/complex.o: complex.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/complex.o complex.c
 
+${OBJECTDIR}/cvwrap.o: cvwrap.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/cvwrap.o cvwrap.c
+
+${OBJECTDIR}/main.o: main.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.c
+
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
-	${RM} -r build/Release
-	${RM} dist/Release/MinGW-Windows/shapefinder.exe
+	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder
 
 # Subprojects
 .clean-subprojects:
