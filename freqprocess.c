@@ -1,8 +1,9 @@
 #include "freqprocess.h"
-#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
 #define UINT8_MAX_VALUE (255)
 
-bwimage_t *correlateLocateShape(bwimage_t *target, bwimage_t *pattern, float variance, float tolerancethreshold, int *npeak, Pixel *maximizer) {
+bwimage_t *correlateLocateShape(bwimage_t *target, bwimage_t *pattern,
+                                float variance, float tolerancethreshold,
+                                int *npeak, Pixel *maximizer) {
     cimage_t *cTarget = bwimageToCimage(target);
     cimage_t *cPattern = bwimageToCimage(pattern);
     cimage_t *cResult = complexCorrelate(cTarget, cPattern, variance);
@@ -13,19 +14,53 @@ bwimage_t *correlateLocateShape(bwimage_t *target, bwimage_t *pattern, float var
     return result;
 }
 
-void trimLocateShape(bwimage_t **corfil, bwimage_t *target, bwimage_t **pattern, float variance, float tolerancethreshold, int *npeak, Pixel *maximizer) {
+void trimLocateShape(bwimage_t **corfil, bwimage_t *target, bwimage_t **pattern,
+                     float variance, float tolerancethreshold, int *npeak,
+                     Pixel *maximizer) {
     cimage_t *cTarget = bwimageToCimage(target);
     cimage_t *cPattern = bwimageToCimage(*pattern);
     cimage_t *cResult;
     complexTrimCor(&cResult, cTarget, &cPattern, variance);
     *pattern = cimageToBwimage(cPattern);
-    *corfil = cimageToBwimageMemorizePeaks(cResult, tolerancethreshold, npeak, maximizer);
+    *corfil = cimageToBwimageMemorizePeaks(cResult, tolerancethreshold,
+                                                npeak, maximizer);
     freeCimage(cTarget);
     freeCimage(cPattern);
     freeCimage(cResult);
 }
 
-void createPeakImage(bwimage_t **image_peaks, int height, int width, Pixel peaks[], int npeak) {
+void locateShape(bwimage_t *target, bwimage_t *pattern,
+                 float variance, Pixel *peak) {
+    cimage_t *cTarget = bwimageToCimage(target);
+    cimage_t *cPattern = bwimageToCimage(pattern);
+    cimage_t *cResult = complexCorrelate(cTarget, cPattern, variance);
+    findPeak(cResult, peak);
+    freeCimage(cTarget);
+    freeCimage(cPattern);
+    freeCimage(cResult);
+}
+
+void findPeak(cimage_t *correlation, Pixel *peak) {
+    	int i, j;
+        int height = correlation->height, width = correlation->width;
+        Complex *rawdata = correlation->rawdata;
+        float max = rawdata[0].re;
+        int x = 0, y = 0;
+	for (i=0; i < height; i++) {
+		for (j=0; j < width; j++) {
+			if (rawdata[i * width + j].re > max) {
+                            max = rawdata[i * width + j].re;
+                            x = j;
+                            y = i;
+			}
+		}
+	}
+        peak->x = x;
+        peak->y = y;
+}
+
+void createPeakImage(bwimage_t **image_peaks, int height, int width,
+                        Pixel peaks[], int npeak) {
     int i;
     *image_peaks = createBlackBwimage(height, width);
     for (i = 0; i < npeak; i++) {
@@ -33,27 +68,42 @@ void createPeakImage(bwimage_t **image_peaks, int height, int width, Pixel peaks
     }
 }
 
-void createCenterImage(bwimage_t **image_center, bwimage_t *image_pattern, int height, int width, Pixel peak[]) {
-    Pixel center;
-    *image_center = createBlackBwimage(height, width);
-    findCenter(&center, image_pattern);
-    (*image_center)->data[(peak[0].y + center.y) % height][(peak[0].x + center.x) % width] = (uint8) UINT8_MAX_VALUE;
+void createCenterImage(bwimage_t **image_center, int height, int width,
+                        Pixel peak, Pixel center) {
+    int i, j;
+    *image_center = createWhiteBwimage(height, width);
+    for (i = 0; i <= 1; i++) {
+        for (j = 0; j <= 1; j++) {
+            (*image_center)->data
+                    [(peak.y + center.y) % height + i]
+                    [(peak.x + center.x) % width + j] 
+                                                        = 0;
+        }
+    }
 }
 
-void addPosition(bwimage_t *image_center, bwimage_t *image_pattern, Pixel peak[]) {
-    Pixel center;
-    findCenter(&center, image_pattern);
-    image_center->data[(peak[0].y + center.y) % image_center->height][(peak[0].x + center.x) % image_center->width] = (uint8) UINT8_MAX_VALUE;
+void addPosition(bwimage_t *image_center, Pixel peak, Pixel center) {
+    int height = image_center->height, width = image_center->width;
+    int i, j;
+    for (i = 0; i <= 1; i++) {
+        for (j = 0; j <= 1; j++) {
+            image_center->data[(peak.y + center.y + i) % height]
+                              [(peak.x + center.x + j) % width] = 0;
+        }
+    }
 }
 
-void fillWithShapes(bwimage_t **image_shapes, bwimage_t *image_pattern, int height, int width, Pixel peaks[], int npeak) {
+void fillWithShapes(bwimage_t **image_shapes, bwimage_t *image_pattern,
+                        int height, int width, Pixel peaks[], int npeak) {
     int i, j, k;
     *image_shapes = createBlackBwimage(height, width);
     for (k = 0; k < npeak; k++) {
         for (i = 0; i < height; i++) {
             for (j = 0; j < width; j++) {
                 if (image_pattern->data[i][j] != 0) {
-                    (*image_shapes)->data[(i + peaks[k].y) % height][(j + peaks[k].x) % width] = image_pattern->data[i][j];
+                    (*image_shapes)->data[(i + peaks[k].y) % height]
+                                         [(j + peaks[k].x) % width] 
+                                                = image_pattern->data[i][j];
                 }
             }
         }
@@ -79,9 +129,10 @@ void findCenter(Pixel *center, bwimage_t *pattern) {
     center->y = y;
 }
 
-void trim(bwimage_t **image) {
+void trim(bwimage_t **image, float variance) {
     cimage_t *cImage = bwimageToCimage(*image);
-    complexTrim(&cImage, (float) 0.5);
+    complexTrim(&cImage, variance);
+    EEAFreeImage(*image);
     *image = cimageToBwimage(cImage);
     freeCimage(cImage);
 }
@@ -95,39 +146,49 @@ void complexTrim(cimage_t **image, float variance) {
     fourn((float*) (*image)->rawdata, (unsigned long*) nn, 2, -1);
     for (i = 0; i < height / 2; i++) {
         for (j = 0; j < width / 2; j++) {
-            factor.re = (float) sqrt(i * i + j * j) * (float) exp(-(float) (i * i + j * j) / (2 * variance_dim));
-            (*image)->rawdata[i * width + j] = complexMultiply(factor, (*image)->rawdata[i * width + j]);
+            factor.re = (float) sqrt(i * i + j * j) *
+                        (float) exp(- (float)(i*i + j*j) / (2 * variance_dim));
+            (*image)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*image)->rawdata[i * width + j]);
         }
         for (j = width / 2; j < width; j++) {
-            factor.re = (float) sqrt(i * i + (j - width)*(j - width)) * (float) exp(-(float) (i * i + j * j) / (2 * variance_dim));
-            (*image)->rawdata[i * width + j] = complexMultiply(factor, (*image)->rawdata[i * width + j]);
+            factor.re = (float) sqrt(i * i + (j - width)*(j - width)) *
+                    (float) exp(-(float) (i * i + j * j) / (2 * variance_dim));
+            (*image)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*image)->rawdata[i * width + j]);
         }
     }
     for (i = height / 2; i < height; i++) {
         for (j = 0; j < width / 2; j++) {
-            factor.re = (float) sqrt((i - height)*(i - height) + j * j) * (float) exp(-(float) (i * i + j * j) / (2 * variance_dim));
-            (*image)->rawdata[i * width + j] = complexMultiply(factor, (*image)->rawdata[i * width + j]);
+            factor.re = (float) sqrt((i - height)*(i - height) + j * j) *
+                    (float) exp(-(float) (i * i + j * j) / (2 * variance_dim));
+            (*image)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*image)->rawdata[i * width + j]);
         }
         for (j = width / 2; j < width; j++) {
-            factor.re = (float) sqrt((i - height)*(i - height) + (j - width)*(j - width)) * (float) exp(-(float) (i * i + j * j) / (2 * variance_dim));
-            (*image)->rawdata[i * width + j] = complexMultiply(factor, (*image)->rawdata[i * width + j]);
+            factor.re = 
+            (float) sqrt((i - height)*(i - height) + (j - width)*(j - width)) *
+                    (float) exp(-(float) (i * i + j * j) / (2 * variance_dim));
+            (*image)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*image)->rawdata[i * width + j]);
         }
     }
 
     fourn((float*) ((*image)->rawdata), (unsigned long*) nn, 2, 1);
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            (*image)->data[i][j].re = (*image)->rawdata[i * width + j].re = fabs((*image)->rawdata[i * width + j].re);
+            (*image)->data[i][j].re = (*image)->rawdata[i * width + j].re
+                                    = fabs((*image)->rawdata[i * width + j].re);
             (*image)->data[i][j].im = (*image)->rawdata[i * width + j].im;
         }
     }
 }
 
-void complexTrimCor(cimage_t **corfil, cimage_t *target, cimage_t **pattern, float variance) {
+void complexTrimCor(cimage_t **corfil, cimage_t *target,
+                        cimage_t **pattern, float variance) {
     int height = target->height, width = target->width, i, j;
-    //int height=(*pattern)->height, width=(*pattern)->width, i, j;
     int nn[2] = {height, width};
-    float variance_dim = (float) height * (float) width * variance; // variance dimensionn�e en fonction de la taille de l'image
+    float variance_dim = (float) height * (float) width * variance;
     Complex factor = {0., 0.};
     *corfil = createCimage(height, width);
 
@@ -135,39 +196,64 @@ void complexTrimCor(cimage_t **corfil, cimage_t *target, cimage_t **pattern, flo
     fourn((float*) ((*pattern)->rawdata), (unsigned long*) nn, 2, -1);
     for (i = 0; i < height / 2; i++) {
         for (j = 0; j < width / 2; j++) {
-            (*corfil)->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate((*pattern)->rawdata[i * width + j]));
-            factor.re = (float) sqrt(i * i + j * j); //* exp(- (float)(i*i + j*j) / (2*variance_dim));
-            (*pattern)->rawdata[i * width + j] = complexMultiply(factor, (*pattern)->rawdata[i * width + j]);
-            factor.re = factor.re * (float) sqrt(i * i + j * j) * exp(-(float) (i * i + j * j) / (variance_dim));
+            (*corfil)->rawdata[i * width + j] =
+                    complexMultiply(target->rawdata[i * width + j],
+                          complexConjugate((*pattern)->rawdata[i * width + j]));
+            factor.re = (float) sqrt(i * i + j * j);
+            (*pattern)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*pattern)->rawdata[i * width + j]);
+            factor.re = factor.re * (float) sqrt(i * i + j * j) *
+                        exp(-(float) (i * i + j * j) / (variance_dim));
             factor.im = 0;
-            (*corfil)->rawdata[i * width + j] = complexMultiply(factor, (*corfil)->rawdata[i * width + j]);
+            (*corfil)->rawdata[i * width + j] =
+                    complexMultiply(factor,(*corfil)->rawdata[i * width + j]);
         }
         for (j = width / 2; j < width; j++) {
-            (*corfil)->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate((*pattern)->rawdata[i * width + j]));
-            factor.re = (float) sqrt(i * i + (j - width)*(j - width)); //* exp(- (float)(i*i + (j-width)*(j-width)) / (2*variance_dim));
-            (*pattern)->rawdata[i * width + j] = complexMultiply(factor, (*pattern)->rawdata[i * width + j]);
-            factor.re = factor.re * (float) sqrt(i * i + (j - width)*(j - width)) * exp(-(float) (i * i + (j - width)*(j - width)) / (variance_dim));
+            (*corfil)->rawdata[i * width + j] =
+                    complexMultiply(target->rawdata[i * width + j],
+                          complexConjugate((*pattern)->rawdata[i * width + j]));
+            factor.re = (float) sqrt(i * i + (j - width)*(j - width));
+            (*pattern)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*pattern)->rawdata[i * width + j]);
+            factor.re = factor.re *
+                   (float) sqrt(i * i + (j - width)*(j - width)) *
+                   exp(-(float) (i * i + (j - width)*(j - width)) / (variance_dim));
             factor.im = 0;
-            (*corfil)->rawdata[i * width + j] = complexMultiply(factor, (*corfil)->rawdata[i * width + j]);
+            (*corfil)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*corfil)->rawdata[i * width + j]);
         }
     }
 
     for (i = height / 2; i < height; i++) {
         for (j = 0; j < width / 2; j++) {
-            (*corfil)->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate((*pattern)->rawdata[i * width + j]));
-            factor.re = (float) sqrt((i - height)*(i - height) + j * j); //* exp(- (float)((i-height)*(i-height) + j*j) / (2*variance_dim));
-            (*pattern)->rawdata[i * width + j] = complexMultiply(factor, (*pattern)->rawdata[i * width + j]);
-            factor.re = factor.re * (float) sqrt((i - height)*(i - height) + j * j) * exp(-(float) ((i - height)*(i - height) + j * j) / (variance_dim));
+            (*corfil)->rawdata[i * width + j] = 
+                    complexMultiply(target->rawdata[i * width + j],
+                          complexConjugate((*pattern)->rawdata[i * width + j]));
+            factor.re = (float) sqrt((i - height)*(i - height) + j * j);
+            (*pattern)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*pattern)->rawdata[i * width + j]);
+            factor.re = factor.re *
+                    (float) sqrt((i - height)*(i - height) + j * j) *
+                    exp(-(float) ((i - height)*(i - height) + j * j) /
+                    (variance_dim));
             factor.im = 0;
-            (*corfil)->rawdata[i * width + j] = complexMultiply(factor, (*corfil)->rawdata[i * width + j]);
+            (*corfil)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*corfil)->rawdata[i * width + j]);
         }
         for (j = width / 2; j < width; j++) {
-            (*corfil)->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate((*pattern)->rawdata[i * width + j]));
-            factor.re = (float) sqrt((i - height)*(i - height) + (j - width)*(j - width)); //* exp(- (float)((i-height)*(i-height) + (j-width)*(j-width)) / (2*variance_dim));
-            (*pattern)->rawdata[i * width + j] = complexMultiply(factor, (*pattern)->rawdata[i * width + j]);
-            factor.re = factor.re * (float) sqrt((i - height)*(i - height) + (j - width)*(j - width)) * exp(-(float) ((i - height)*(i - height) + (j - width)*(j - width)) / (variance_dim));
+            (*corfil)->rawdata[i * width + j] =
+                    complexMultiply(target->rawdata[i * width + j],
+                    complexConjugate((*pattern)->rawdata[i * width + j]));
+            factor.re = (float) sqrt((i - height)*(i - height) + (j - width)*(j - width));
+            (*pattern)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*pattern)->rawdata[i * width + j]);
+            factor.re = factor.re *
+                    sqrt((i - height)*(i - height) + (j - width)*(j - width))
+                    * exp(-(float) ((i-height)*(i-height)+(j-width)*(j-width)) /
+                    (variance_dim));
             factor.im = 0;
-            (*corfil)->rawdata[i * width + j] = complexMultiply(factor, (*corfil)->rawdata[i * width + j]);
+            (*corfil)->rawdata[i * width + j] =
+                    complexMultiply(factor, (*corfil)->rawdata[i * width + j]);
         }
     }
 
@@ -175,17 +261,18 @@ void complexTrimCor(cimage_t **corfil, cimage_t *target, cimage_t **pattern, flo
     fourn((float*) ((*pattern)->rawdata), (unsigned long*) nn, 2, 1);
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            (*pattern)->data[i][j].re = (*pattern)->rawdata[i * width + j].re = fabs((*pattern)->rawdata[i * width + j].re);
+            (*pattern)->data[i][j].re = (*pattern)->rawdata[i * width + j].re
+                                = fabs((*pattern)->rawdata[i * width + j].re);
             (*corfil)->data[i][j] = (*corfil)->rawdata[i * width + j];
             (*pattern)->data[i][j].im = (*pattern)->rawdata[i * width + j].im;
         }
     }
 }
 
-cimage_t *complexCorrelate(cimage_t *target, cimage_t *pattern, float variance) {
+cimage_t *complexCorrelate(cimage_t *target, cimage_t *pattern, float variance){
     int height = target->height, width = target->width, i, j;
     int nn[2] = {height, width};
-    float variance_dim = (float) height * (float) width * variance; // variance dimensionn�e en fonction de la taille de l'image
+    float variance_dim = (float) height * (float) width * variance;
     Complex factor = {0., 0.};
     cimage_t *result = createCimage(height, width);
 
@@ -193,27 +280,46 @@ cimage_t *complexCorrelate(cimage_t *target, cimage_t *pattern, float variance) 
     fourn((float*) (pattern->rawdata), (unsigned long*) nn, 2, -1);
     for (i = 0; i < height / 2; i++) {
         for (j = 0; j < width / 2; j++) {
-            result->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate(pattern->rawdata[i * width + j]));
-            factor.re = (float) (i * i + j * j) * exp(-(float) (i * i + j * j) / variance_dim);
-            result->rawdata[i * width + j] = complexMultiply(factor, result->rawdata[i * width + j]);
+            result->rawdata[i * width + j] =
+                    complexMultiply(target->rawdata[i * width + j],
+                    complexConjugate(pattern->rawdata[i * width + j]));
+            factor.re = (float) (i * i + j * j) * exp(-(float) (i * i + j * j) /
+                                                        variance_dim);
+            result->rawdata[i * width + j] =
+                    complexMultiply(factor, result->rawdata[i * width + j]);
         }
         for (j = width / 2; j < width; j++) {
-            result->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate(pattern->rawdata[i * width + j]));
-            factor.re = (float) (i * i + (j - width)*(j - width)) * exp(-(float) (i * i + (j - width)*(j - width)) / variance_dim);
-            result->rawdata[i * width + j] = complexMultiply(factor, result->rawdata[i * width + j]);
+            result->rawdata[i * width + j] =
+                    complexMultiply(target->rawdata[i * width + j],
+                    complexConjugate(pattern->rawdata[i * width + j]));
+            factor.re = (float) (i * i + (j - width)*(j - width)) *
+                    exp(-(float) (i * i + (j - width)*(j - width)) /
+                                                        variance_dim);
+            result->rawdata[i * width + j] =
+                    complexMultiply(factor, result->rawdata[i * width + j]);
         }
     }
 
     for (i = height / 2; i < height; i++) {
         for (j = 0; j < width / 2; j++) {
-            result->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate(pattern->rawdata[i * width + j]));
-            factor.re = (float) ((i - height)*(i - height) + j * j) * exp(-(float) ((i - height)*(i - height) + j * j) / variance_dim);
-            result->rawdata[i * width + j] = complexMultiply(factor, result->rawdata[i * width + j]);
+            result->rawdata[i * width + j] =
+                    complexMultiply(target->rawdata[i * width + j],
+                    complexConjugate(pattern->rawdata[i * width + j]));
+            factor.re = (float) ((i - height)*(i - height) + j * j) *
+                    exp(-(float) ((i - height)*(i - height) + j * j) /
+                                                                variance_dim);
+            result->rawdata[i * width + j] =
+                    complexMultiply(factor, result->rawdata[i * width + j]);
         }
         for (j = width / 2; j < width; j++) {
-            result->rawdata[i * width + j] = complexMultiply(target->rawdata[i * width + j], complexConjugate(pattern->rawdata[i * width + j]));
-            factor.re = (float) ((i - height)*(i - height) + (j - width)*(j - width)) * exp(-(float) ((i - height)*(i - height) + (j - width)*(j - width)) / variance_dim);
-            result->rawdata[i * width + j] = complexMultiply(factor, result->rawdata[i * width + j]);
+            result->rawdata[i * width + j] =
+                    complexMultiply(target->rawdata[i * width + j],
+                    complexConjugate(pattern->rawdata[i * width + j]));
+            factor.re = ((i - height)*(i - height) + (j - width)*(j - width)) *
+                    exp(- ((i - height)*(i - height) + (j - width)*(j - width))/
+                    variance_dim);
+            result->rawdata[i * width + j] = 
+                    complexMultiply(factor, result->rawdata[i * width + j]);
         }
     }
 
@@ -228,138 +334,34 @@ cimage_t *complexCorrelate(cimage_t *target, cimage_t *pattern, float variance) 
 
 void filter(Complex tab[], int height, int width, float variance) {
     int i, j;
-    float variance_dim = (float) height * (float) width * variance; // variance dimensionn�e en fonction de la taille de l'image
+    float variance_dim = (float) height * (float) width * variance;
     Complex factor = {0., 0.};
 
     for (i = 0; i < height / 2; i++) {
         for (j = 0; j < width / 2; j++) {
-            factor.re = (float) (i * i + j * j) * exp(-(float) (i * i + j * j) / variance_dim);
+            factor.re = (float) (i * i + j * j) * exp(-(float) (i * i + j * j) /
+                    variance_dim);
             tab[i * width + j] = complexMultiply(factor, tab[i * width + j]);
         }
         for (j = width / 2; j < width; j++) {
-            factor.re = (float) (i * i + (j - width)*(j - width)) * exp(-(float) (i * i + (j - width)*(j - width)) / variance_dim);
+            factor.re = (float) (i * i + (j - width)*(j - width)) *
+                 exp(-(float) (i * i + (j - width)*(j - width)) / variance_dim);
             tab[i * width + j] = complexMultiply(factor, tab[i * width + j]);
         }
     }
 
     for (i = height / 2; i < height; i++) {
         for (j = 0; j < width / 2; j++) {
-            factor.re = (float) ((i - height)*(i - height) + j * j) * exp(-(float) ((i - height)*(i - height) + j * j) / variance_dim);
+            factor.re = (float) ((i - height)*(i - height) + j * j) *
+                    exp(-(float) ((i - height)*(i - height) + j * j) /
+                                                                variance_dim);
             tab[i * width + j] = complexMultiply(factor, tab[i * width + j]);
         }
         for (j = width / 2; j < width; j++) {
-            factor.re = (float) ((i - height)*(i - height) + (j - width)*(j - width)) * exp(-(float) ((i - height)*(i - height) + (j - width)*(j - width)) / variance_dim);
+            factor.re = ((i - height)*(i - height) + (j - width)*(j - width)) *
+                    exp(-((i - height)*(i - height) + (j - width)*(j - width)) /
+                                                                variance_dim);
             tab[i * width + j] = complexMultiply(factor, tab[i * width + j]);
         }
     }
 }
-
-void fourn(float data[], unsigned long nn[], int ndim, int isign) {
-
-    int idim;
-    unsigned long i1, i2, i3, i2rev, i3rev, ip1, ip2, ip3, ifp1, ifp2;
-    unsigned long ibit, k1, k2, n, nprev, nrem, ntot;
-    float tempi, tempr;
-    double theta, wi, wpi, wpr, wr, wtemp;
-
-    data--;
-    nn--;
-
-    for (ntot = 1, idim = 1; idim <= ndim; idim++)
-        ntot *= nn[idim];
-    nprev = 1;
-    for (idim = ndim; idim >= 1; idim--) {
-        n = nn[idim];
-        nrem = ntot / (n * nprev);
-        ip1 = nprev << 1;
-        ip2 = ip1*n;
-        ip3 = ip2*nrem;
-        i2rev = 1;
-        for (i2 = 1; i2 <= ip2; i2 += ip1) {
-            if (i2 < i2rev) {
-                for (i1 = i2; i1 <= i2 + ip1 - 2; i1 += 2) {
-                    for (i3 = i1; i3 <= ip3; i3 += ip2) {
-                        i3rev = i2rev + i3 - i2;
-                        SWAP(data[i3], data[i3rev]);
-                        SWAP(data[i3 + 1], data[i3rev + 1]);
-                    }
-                }
-            }
-            ibit = ip2 >> 1;
-            while (ibit >= ip1 && i2rev > ibit) {
-                i2rev -= ibit;
-                ibit >>= 1;
-            }
-            i2rev += ibit;
-        }
-        ifp1 = ip1;
-        while (ifp1 < ip2) {
-            ifp2 = ifp1 << 1;
-            theta = isign * 6.28318530717959 / (ifp2 / ip1);
-            wtemp = sin(0.5 * theta);
-            wpr = -2.0 * wtemp*wtemp;
-            wpi = sin(theta);
-            wr = 1.0;
-            wi = 0.0;
-            for (i3 = 1; i3 <= ifp1; i3 += ip1) {
-                for (i1 = i3; i1 <= i3 + ip1 - 2; i1 += 2) {
-                    for (i2 = i1; i2 <= ip3; i2 += ifp2) {
-                        k1 = i2;
-                        k2 = k1 + ifp1;
-                        tempr = (float) wr * data[k2]-(float) wi * data[k2 + 1];
-                        tempi = (float) wr * data[k2 + 1]+(float) wi * data[k2];
-                        data[k2] = data[k1] - tempr;
-                        data[k2 + 1] = data[k1 + 1] - tempi;
-                        data[k1] += tempr;
-                        data[k1 + 1] += tempi;
-                    }
-                }
-                wr = (wtemp = wr) * wpr - wi * wpi + wr;
-                wi = wi * wpr + wtemp * wpi + wi;
-            }
-            ifp1 = ifp2;
-        }
-        nprev *= n;
-    }
-}
-
-#undef SWAP
-
-// High-pass filter:
-
-/*
-                int nn[2] = {256, 256};
-                cimage_t *image = (cimage_t *) malloc(sizeof(cimage_t));
-                bwimage_t *real_image;
-                image->height = image->width = 256;
-                image->rawdata = (Complex *) malloc(sizeof(Complex)*256*256);
-                image->data = (Complex **) malloc(sizeof(Complex *)*256);
-                for (k=0; k < 256/2; k++) {
-                        image->data[k] = (Complex *) malloc(sizeof(Complex)*256);
-                        for (i=0; i < 256/2; i++) {
-                                image->rawdata[k*256 + i].re = (float)sqrt(k*k + i*i);
-                        }
-                        for(i=256/2; i < 256; i ++) {
-                                image->rawdata[k*256 + i].re = (float)sqrt(k*k + (i-256)*(i-256));
-                        }
-                }
-                for (k=256/2; k < 256; k++){
-                        image->data[k] = (Complex *) malloc(sizeof(Complex)*256);
-                        for (i=0; i < 256/2; i++) {
-                                image->rawdata[k*256 + i].re = (float)sqrt((k-256)*(k-256) + i*i);
-                        }
-                        for(i=256/2; i < 256; i ++) {
-                                image->rawdata[k*256 + i].re = (float)sqrt((k-256)*(k-256) + (i-256)*(i-256));
-                        }
-                }
-
-                for (k=0; k < 256; k++) {
-                        for (i=0; i < 256; i++) {
-                                image->data[k][i] = image->rawdata[k*256+i];
-                        }
-                }
-                real_image = cimageToBwimage(image);
-                if(EEA_OK != (retval=EEADumpImage("samples/filter_highpass.tif", real_image))) break;
-
- */
-

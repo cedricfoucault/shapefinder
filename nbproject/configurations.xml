@@ -4,17 +4,16 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>centerfinder.h</itemPath>
-      <itemPath>complex.h</itemPath>
-      <itemPath>cvwrap.h</itemPath>
       <itemPath>fileread.h</itemPath>
+      <itemPath>findShape.h</itemPath>
       <itemPath>freqprocess.h</itemPath>
-      <itemPath>shapefinder.h</itemPath>
       <itemPath>tiff.h</itemPath>
       <itemPath>tiffconf.h</itemPath>
       <itemPath>tiffio.h</itemPath>
       <itemPath>tiffvers.h</itemPath>
       <itemPath>tifwrap.h</itemPath>
+      <itemPath>traceTrajectory.h</itemPath>
+      <itemPath>wrap.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -23,14 +22,13 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
-      <itemPath>centerfinder.c</itemPath>
-      <itemPath>complex.c</itemPath>
-      <itemPath>cvwrap.c</itemPath>
       <itemPath>fileread.c</itemPath>
+      <itemPath>findShape.c</itemPath>
       <itemPath>freqprocess.c</itemPath>
       <itemPath>main.c</itemPath>
-      <itemPath>shapefinder.c</itemPath>
       <itemPath>tifwrap.c</itemPath>
+      <itemPath>traceTrajectory.c</itemPath>
+      <itemPath>wrap.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"

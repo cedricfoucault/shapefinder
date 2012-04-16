@@ -34,13 +34,12 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/wrap.o \
 	${OBJECTDIR}/freqprocess.o \
 	${OBJECTDIR}/tifwrap.o \
 	${OBJECTDIR}/fileread.o \
-	${OBJECTDIR}/shapefinder.o \
-	${OBJECTDIR}/centerfinder.o \
-	${OBJECTDIR}/complex.o \
-	${OBJECTDIR}/cvwrap.o \
+	${OBJECTDIR}/findShape.o \
+	${OBJECTDIR}/traceTrajectory.o \
 	${OBJECTDIR}/main.o
 
 
@@ -68,6 +67,11 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/shapefinder ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
+${OBJECTDIR}/wrap.o: wrap.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/wrap.o wrap.c
+
 ${OBJECTDIR}/freqprocess.o: freqprocess.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
@@ -83,25 +87,15 @@ ${OBJECTDIR}/fileread.o: fileread.c
 	${RM} $@.d
 	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/fileread.o fileread.c
 
-${OBJECTDIR}/shapefinder.o: shapefinder.c 
+${OBJECTDIR}/findShape.o: findShape.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/shapefinder.o shapefinder.c
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/findShape.o findShape.c
 
-${OBJECTDIR}/centerfinder.o: centerfinder.c 
+${OBJECTDIR}/traceTrajectory.o: traceTrajectory.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/centerfinder.o centerfinder.c
-
-${OBJECTDIR}/complex.o: complex.c 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/complex.o complex.c
-
-${OBJECTDIR}/cvwrap.o: cvwrap.c 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/cvwrap.o cvwrap.c
+	$(COMPILE.c) -g `pkg-config --cflags opencv`    -MMD -MP -MF $@.d -o ${OBJECTDIR}/traceTrajectory.o traceTrajectory.c
 
 ${OBJECTDIR}/main.o: main.c 
 	${MKDIR} -p ${OBJECTDIR}

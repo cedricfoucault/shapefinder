@@ -4,18 +4,12 @@
  *
  * Created on June 4, 2011, 1:28 PM
  */
+#include "findShape.h"
+#include "traceTrajectory.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "centerfinder.h"
-#include "shapefinder.h"
-
-/*
- * 
- */
 int main() {
-    return centerfinder();
-    //return shapefinder();
-    //return (EXIT_SUCCESS);
+    /* return traceTrajectory(); */
+    return findShape();
+    }
 }
 

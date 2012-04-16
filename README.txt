@@ -22,15 +22,20 @@ help to analyze the results if you want to go further. Note that in both images,
 if there is a peak at [145][86], it means that you need to move the target image 145 pixels to the right and 86 pixels
 to the bottom in order to find the correct location of the shape.
 
+This process has been applied to videos to track a moving object in a video:
+it locates the object at each time frame and renders its trajectory in an output image.
+The result is highly experimental, but you can try it if you want by switching the call in main() to traceTrajectory()
+(instead of findShape()).
+
 
 Compilation & Execution
 -----------------------
 
-* Under Windows you can directly run the pre-compiled executable shapefinder.exe located at
-repo/folder/dist/Release/MinGW-Windows/
-
 * To compile the project, just run the Makefile ($ make install). If it doesn't work, try to build it in your favorite IDE
 under a new project. Don't forget to link it with the libtiff library in repo/folder/lib/.
+
+* If you want to use the video tracking part (traceTrajectory()), you need to have OpenCV installed
+(see opencv.willowgarage.com).
 
 
 How to use it
@@ -71,8 +76,6 @@ Todo
 * Extend the detection so that it works even if the shapes in the target image are bigger or smaller
 than in the pattern image.
 * Extend the detection so that it works even if the shapes in the target image is rotated.
-* Automate the process for large amounts of target images, in order to apply it to videos (many time frames).
--- * Make it compatible with recent c compilers. -- DONE \o/ !!!!
 
 
 Contact
